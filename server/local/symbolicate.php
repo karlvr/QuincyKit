@@ -41,48 +41,20 @@ include "serverconfig.php";
 
 function doPost($postdata)
 {
-    global $updatecrashdataurl, $hostname, $webuser, $webpwd;
-    
-	$uri = $updatecrashdataurl;
-	$host = $hostname;
-	$handle = fsockopen($host, 80, $errno, $errstr); 
-	if (!$handle) { 
-		return 'error'; 
-	} 
-	else { 
-		$temp = "POST ".$uri." HTTP/1.1\r\n"; 
-		$temp .= "Host: ".$host."\r\n"; 
-		$temp .= "User-Agent: PHP Script\r\n"; 
-		$temp .= "Content-Type: application/x-www-form-urlencoded\r\n";
-		if ($webuser != "" && $webpwd != "")
-    		$temp .= "Authorization: Basic ".base64_encode($webuser.":".$webpwd)."\r\n"; 
-		$temp .= "Content-Length: ".strlen($postdata)."\r\n"; 
-		$temp .= "Connection: close\r\n\r\n"; 
-		$temp .= $postdata; 
-		$temp .= "\r\n\r\n";
-		
-		fwrite($handle, $temp); 
-		
-		$response = '';
-		
-		while (!feof($handle)) 
-			$response.=fgets($handle, 128); 
-			
-		$response=preg_split("/\r\n\r\n/",$response);
-		
-		$header=$response[0]; 
-		$responsecontent=$response[1]; 
-		
-		if(!(strpos($header,"Transfer-Encoding: chunked")===false))
-		{
-			$aux=preg_split("/\r\n/",$responsecontent); 
-			for($i=0;$i<count($aux);$i++) 
-				if($i==0 || ($i%2==0)) 
-					$aux[$i]=""; 
-			$responsecontent=implode("",$aux); 
-		} 
-		return chop($responsecontent); 
-	} 
+	global $updatecrashdataurl, $scheme, $hostname, $webuser, $webpwd;
+	
+	$url = "$scheme://$hostname$updatecrashdataurl";
+
+	$curl = curl_init($url);
+    curl_setopt($curl, CURLOPT_POST, true);
+    curl_setopt($curl, CURLOPT_POSTFIELDS, $postdata);
+	curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+	if ($webuser != '') {
+		curl_setopt($curl, CURLOPT_USERPWD, "$webuser:$webpwd");
+	}
+    $response = curl_exec($curl);
+	curl_close($curl);
+	return $response;
 } 
     
 
@@ -134,7 +106,7 @@ if ($content !== false && strlen($content) > 0)
 			
 			if (file_exists($resultfilename) && filesize($resultfilename) > 0)
 			{
-				echo "  Sending symbolicated data back to the server ...\n";
+				echo "  Sending symbolicated data back to the server ...";
 				
 				$resultcontent = file_get_contents($resultfilename);
 
@@ -142,9 +114,13 @@ if ($content !== false && strlen($content) > 0)
 				
 				if (is_string($post_results))
 				{
-					if ($post_results == 'success')
-				 		echo '  SUCCESS!';
-			    }
+					if (preg_match("/success$/", $post_results))
+						echo "  SUCCESS!\n";
+					else
+						echo "  FAILURE\n";
+			    } else {
+					echo "  FAILURE\n";
+				}
 
 			}
 
