@@ -117,12 +117,12 @@ if ($groupid !='') {
     $cols2 = '<colgroup><col width="280"/><col width="340"/><col width="340"/></colgroup>';
 
     $query = "SELECT location, exception, reason, description FROM ".$dbgrouptable." WHERE id = '".$groupid."'";
-    $result = mysql_query($query) or die(end_with_result('Error in SQL '.$query));
+    $result = mysqli_query($GLOBALS['link'], $query) or die(end_with_result('Error in SQL '.$query));
 
-    $numrows = mysql_num_rows($result);
+    $numrows = mysqli_num_rows($result);
     if ($numrows > 0) {
         // get the status
-        while ($row = mysql_fetch_row($result)) {
+        while ($row = mysqli_fetch_row($result)) {
             $location = $row[0];
             $exception = $row[1];
             $reason = $row[2];
@@ -141,18 +141,18 @@ if ($groupid !='') {
 			$osticks = "";
 			$osvalues = "";
 			$query2 = "SELECT systemversion, COUNT(systemversion) FROM ".$dbcrashtable.$whereclause." group by systemversion order by systemversion desc";
-			$result2 = mysql_query($query2) or die(end_with_result('Error in SQL '.$query2));
-			$numrows2 = mysql_num_rows($result2);
+			$result2 = mysqli_query($GLOBALS['link'], $query2) or die(end_with_result('Error in SQL '.$query2));
+			$numrows2 = mysqli_num_rows($result2);
 			if ($numrows2 > 0) {
 				// get the status
-				while ($row2 = mysql_fetch_row($result2)) {
+				while ($row2 = mysqli_fetch_row($result2)) {
 					if ($osticks != "") $osticks = $osticks.", ";
 					$osticks .= "'".$row2[0]."'";
 					if ($osvalues != "") $osvalues = $osvalues.", ";
 					$osvalues .= $row2[1];
 				}
 			}
-			mysql_free_result($result2);
+			mysqli_free_result($result2);
 			
 			// get the amount of crashes per system version
 			$crashestime = true;
@@ -160,18 +160,18 @@ if ($groupid !='') {
 			$platformticks = "";
 			$platformvalues = "";
 			$query2 = "SELECT platform, COUNT(platform) FROM ".$dbcrashtable.$whereclause." AND platform != \"\" group by platform order by platform desc";
-			$result2 = mysql_query($query2) or die(end_with_result('Error in SQL '.$query2));
-			$numrows2 = mysql_num_rows($result2);
+			$result2 = mysqli_query($GLOBALS['link'], $query2) or die(end_with_result('Error in SQL '.$query2));
+			$numrows2 = mysqli_num_rows($result2);
 			if ($numrows2 > 0) {
 				// get the status
-				while ($row2 = mysql_fetch_row($result2)) {
+				while ($row2 = mysqli_fetch_row($result2)) {
 					if ($platformticks != "") $platformticks = $platformticks.", ";
 					$platformticks .= "'".$row2[0]."'";
 					if ($platformvalues != "") $platformvalues = $platformvalues.", ";
 					$platformvalues .= $row2[1];
 				}
 			}
-			mysql_free_result($result2);
+			mysqli_free_result($result2);
 			
 			
 			
@@ -190,16 +190,16 @@ if ($groupid !='') {
             // get the amount of crashes
             $amount = 0;
             $query2 = "SELECT count(*) FROM ".$dbcrashtable.$whereclause;
-            $result2 = mysql_query($query2) or die(end_with_result('Error in SQL '.$query2));
-            $numrows2 = mysql_num_rows($result2);
+            $result2 = mysqli_query($GLOBALS['link'], $query2) or die(end_with_result('Error in SQL '.$query2));
+            $numrows2 = mysqli_num_rows($result2);
             if ($numrows2 == 1) {
-                $row2 = mysql_fetch_row($result2);
+                $row2 = mysqli_fetch_row($result2);
                 $amount = $row2[0];
             }
-            mysql_free_result($result2);
+            mysqli_free_result($result2);
         }
     }
-   	mysql_free_result($result);
+   	mysqli_free_result($result);
 }
 
 echo '<table id="crashlist" class="hover">'.$cols;
@@ -208,12 +208,12 @@ echo '<tbody>';
 
 // get all crashes
 $query = "SELECT userid, username, contact, systemversion, timestamp, id, jailbreak, platform FROM ".$dbcrashtable.$whereclause." ORDER BY systemversion desc, timestamp desc";
-$result = mysql_query($query) or die(end_with_result('Error in SQL '.$query));
+$result = mysqli_query($GLOBALS['link'], $query) or die(end_with_result('Error in SQL '.$query));
 
-$numrows = mysql_num_rows($result);
+$numrows = mysqli_num_rows($result);
 if ($numrows > 0) {
 	// get the status
-	while ($row = mysql_fetch_row($result)) {
+	while ($row = mysqli_fetch_row($result)) {
 		$userid = $row[0];
 		$username = $row[1];
 		$contact = $row[2];
@@ -225,15 +225,15 @@ if ($numrows > 0) {
 				
 		$todo = 2;
 		$query2 = "SELECT done FROM ".$dbsymbolicatetable." WHERE crashid = ".$crashid;
-		$result2 = mysql_query($query2) or die(end_with_result('Error in SQL '.$query));
+		$result2 = mysqli_query($GLOBALS['link'], $query2) or die(end_with_result('Error in SQL '.$query));
 
-		$numrows2 = mysql_num_rows($result2);
+		$numrows2 = mysqli_num_rows($result2);
 		if ($numrows2 > 0)
 		{
-			$row2 = mysql_fetch_row($result2);
+			$row2 = mysqli_fetch_row($result2);
 			$todo = $row2[0];
 		}
-		mysql_free_result($result2);
+		mysqli_free_result($result2);
 		
 		$now = time();
 		
@@ -295,7 +295,7 @@ if ($numrows > 0) {
 		echo "</tr>";
 	}
 	
-	mysql_free_result($result);
+	mysqli_free_result($result);
 } else {
 	echo '<tr><td colspan="4">No data found</td></tr>';
 }
@@ -305,7 +305,7 @@ echo "<table>".$cols;
 echo "<tr><th colspan='2'>Description</th><th colspan='2'>Log</th></tr>";
 echo "<tr><td colspan='2'><div id='descriptionarea' class='short'></div></td><td colspan='2'><div id='logarea' class='log'></div></td></tr></table>";
 
-mysql_close($link);
+mysqli_close($link);
 
 ?>
 <script type="text/javascript">

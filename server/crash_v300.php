@@ -137,9 +137,8 @@ function doPost($url, $postdata) {
 $allowed_args = ',xmlstring,';
 
 /* Verbindung aufbauen, ausw?hlen einer Datenbank */
-$link = mysql_connect($server, $loginsql, $passsql)
+$link = mysqli_connect($server, $loginsql, $passsql, $base)
   or die(xml_for_result(FAILURE_DATABASE_NOT_AVAILABLE));
-mysql_select_db($base) or die(xml_for_result(FAILURE_DATABASE_NOT_AVAILABLE));
 
 foreach(array_keys($_POST) as $k) {
   $temp = ",$k,";
@@ -249,31 +248,31 @@ while ($reader->read()) {
     $crashes[$crashIndex]["appname"] = "";
   
   } else if ($reader->name == "bundleidentifier" && $reader->nodeType == XMLReader::ELEMENT) {
-    $crashes[$crashIndex]["bundleidentifier"] = mysql_real_escape_string(reading($reader, "bundleidentifier"));
+    $crashes[$crashIndex]["bundleidentifier"] = mysqli_real_escape_string($link, reading($reader, "bundleidentifier"));
   } else if ($reader->name == "version" && $reader->nodeType == XMLReader::ELEMENT) {
-    $crashes[$crashIndex]["version"] = mysql_real_escape_string(reading($reader, "version"));
+    $crashes[$crashIndex]["version"] = mysqli_real_escape_string($link, reading($reader, "version"));
     if( !ValidateString( $crashes[$crashIndex]["version"], array('format'=>VALIDATE_NUM . VALIDATE_ALPHA. VALIDATE_SPACE . VALIDATE_PUNCTUATION) ) )
       die(xml_for_result(FAILURE_XML_VERSION_NOT_ALLOWED));
   } else if ($reader->name == "senderversion" && $reader->nodeType == XMLReader::ELEMENT) {
-    $crashes[$crashIndex]["senderversion"] = mysql_real_escape_string(reading($reader, "senderversion"));
+    $crashes[$crashIndex]["senderversion"] = mysqli_real_escape_string($link, reading($reader, "senderversion"));
     if (!ValidateString( $crashes[$crashIndex]["senderversion"], array('format'=>VALIDATE_NUM . VALIDATE_ALPHA. VALIDATE_SPACE . VALIDATE_PUNCTUATION) ) )
       die(xml_for_result(FAILURE_XML_SENDER_VERSION_NOT_ALLOWED));
   } else if ($reader->name == "applicationname" && $reader->nodeType == XMLReader::ELEMENT) {
-    $crashes[$crashIndex]["applicationname"] = mysql_real_escape_string(reading($reader, "applicationname"));
+    $crashes[$crashIndex]["applicationname"] = mysqli_real_escape_string($link, reading($reader, "applicationname"));
   } else if ($reader->name == "systemversion" && $reader->nodeType == XMLReader::ELEMENT) {
-    $crashes[$crashIndex]["systemversion"] = mysql_real_escape_string(reading($reader, "systemversion"));
+    $crashes[$crashIndex]["systemversion"] = mysqli_real_escape_string($link, reading($reader, "systemversion"));
   } else if ($reader->name == "userid" && $reader->nodeType == XMLReader::ELEMENT) {
-    $crashes[$crashIndex]["userid"] = mysql_real_escape_string(reading($reader, "userid"));
+    $crashes[$crashIndex]["userid"] = mysqli_real_escape_string($link, reading($reader, "userid"));
   } else if ($reader->name == "username" && $reader->nodeType == XMLReader::ELEMENT) {
-    $crashes[$crashIndex]["username"] = mysql_real_escape_string(reading($reader, "username"));
+    $crashes[$crashIndex]["username"] = mysqli_real_escape_string($link, reading($reader, "username"));
   } else if ($reader->name == "contact" && $reader->nodeType == XMLReader::ELEMENT) {
-    $crashes[$crashIndex]["contact"] = mysql_real_escape_string(reading($reader, "contact"));
+    $crashes[$crashIndex]["contact"] = mysqli_real_escape_string($link, reading($reader, "contact"));
   } else if ($reader->name == "description" && $reader->nodeType == XMLReader::ELEMENT) {
-    $crashes[$crashIndex]["description"] = mysql_real_escape_string(reading($reader, "description"));
+    $crashes[$crashIndex]["description"] = mysqli_real_escape_string($link, reading($reader, "description"));
   } else if ($reader->name == "log" && $reader->nodeType == XMLReader::ELEMENT) {
     $crashes[$crashIndex]["logdata"] = reading($reader, "log");
   } else if ($reader->name == "platform" && $reader->nodeType == XMLReader::ELEMENT) {
-    $crashes[$crashIndex]["platform"] = mysql_real_escape_string(reading($reader, "platform"));
+    $crashes[$crashIndex]["platform"] = mysqli_real_escape_string($link, reading($reader, "platform"));
   }
 }
 
@@ -323,27 +322,27 @@ foreach ($crashes as $crash) {
 
     // get the app name
     $query = "SELECT name, hockeyappidentifier FROM ".$dbapptable." where bundleidentifier = '".$crash["bundleidentifier"]."'";
-    $result = mysql_query($query) or die(xml_for_result(FAILURE_SQL_SEARCH_APP_NAME));
+    $result = mysqli_query($link, $query) or die(xml_for_result(FAILURE_SQL_SEARCH_APP_NAME));
 
-    $numrows = mysql_num_rows($result);
+    $numrows = mysqli_num_rows($result);
     if ($numrows == 1) {
       $crash["appname"] = $row[0];
       $hockeyappidentifier = $row[1];
       $notify_emails = $mail_addresses;
       $notify_pushids = $push_prowlids;
     }
-    mysql_free_result($result);
+    mysqli_free_result($result);
   } else {
     // the bundleidentifier is the important string we use to find a match
     $query = "SELECT id, symbolicate, name, notifyemail, notifypush, hockeyappidentifier FROM ".$dbapptable." where bundleidentifier = '".$crash["bundleidentifier"]."'";
-    $result = mysql_query($query) or die(xml_for_result(FAILURE_SQL_SEARCH_APP_NAME));
+    $result = mysqli_query($link, $query) or die(xml_for_result(FAILURE_SQL_SEARCH_APP_NAME));
 
-    $numrows = mysql_num_rows($result);
+    $numrows = mysqli_num_rows($result);
     if ($numrows == 1) {
       // we found one, so let this crash through
       $acceptlog = true;
 
-      $row = mysql_fetch_row($result);
+      $row = mysqli_fetch_row($result);
 
       // check if a todo entry shall be added to create remote symbolification
       if ($row[1] == 1)
@@ -379,7 +378,7 @@ foreach ($crashes as $crash) {
       }
     }
     
-    mysql_free_result($result);
+    mysqli_free_result($result);
   }
 
   // Make sure we only have a max of 5 prowl ids
@@ -407,7 +406,7 @@ foreach ($crashes as $crash) {
       echo xml_for_result(VERSION_STATUS_UNKNOWN);
 
       /* schliessen der Verbinung */
-      mysql_close($link);
+      mysqli_close($link);
 
   	  // HockeyApp doesn't support direct feedback, it requires the new client to do that. So exit right away.
   	  exit;
@@ -419,18 +418,18 @@ foreach ($crashes as $crash) {
 
     // check if the version is already added and the status of the version and notify status
   	$query = "SELECT id, status, notify FROM ".$dbversiontable." WHERE bundleidentifier = '".$crash["bundleidentifier"]."' and version = '".$crash["version"]."'";
-  	$result = mysql_query($query) or die(xml_for_result(FAILURE_SQL_CHECK_VERSION_EXISTS));
+  	$result = mysqli_query($link, $query) or die(xml_for_result(FAILURE_SQL_CHECK_VERSION_EXISTS));
 
-  	$numrows = mysql_num_rows($result);
+  	$numrows = mysqli_num_rows($result);
   	if ($numrows == 0) {
       // version is not available, so add it with status VERSION_STATUS_AVAILABLE
       $query = "INSERT INTO ".$dbversiontable." (bundleidentifier, version, status, notify) values ('".$crash["bundleidentifier"]."', '".$crash["version"]."', ".VERSION_STATUS_UNKNOWN.", ".$notify_default_version.")";
-      $result = mysql_query($query) or die(xml_for_result(FAILURE_SQL_ADD_VERSION));
+      $result = mysqli_query($link, $query) or die(xml_for_result(FAILURE_SQL_ADD_VERSION));
   	} else {
-      $row = mysql_fetch_row($result);
+      $row = mysqli_fetch_row($result);
       $crash["version_status"] = $row[1];
       $notify = $row[2];
-      mysql_free_result($result);
+      mysqli_free_result($result);
   	}
 
   	if ($crash["version_status"] == VERSION_STATUS_DISCONTINUED)
@@ -453,7 +452,7 @@ foreach ($crashes as $crash) {
 }
 
 /* schliessen der Verbinung */
-mysql_close($link);
+mysqli_close($link);
 
 /* Ausgabe der Ergebnisse in XML */
 if ($lastError != 0) {

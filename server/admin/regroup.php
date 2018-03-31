@@ -39,9 +39,8 @@ require_once('common.inc');
 
 $allowed_args = ',bundleidentifier,version,groupid,';
 
-$link = mysql_connect($server, $loginsql, $passsql)
+$link = mysqli_connect($server, $loginsql, $passsql, $base)
     or die(end_with_result('No database connection'));
-mysql_select_db($base) or die(end_with_result('No database connection'));
 
 foreach(array_keys($_GET) as $k) {
     $temp = ",$k,";
@@ -55,12 +54,12 @@ if (!isset($groupid)) $groupid = "0";
 if ($bundleidentifier == "" || $version == "") die(end_with_result('Wrong parameters'));
 
 $query1 = "SELECT id, applicationname FROM ".$dbcrashtable." WHERE groupid = '".$groupid."' and version = '".$version."' and bundleidentifier = '".$bundleidentifier."'";
-$result1 = mysql_query($query1) or die(end_with_result('Error in SQL '.$query1));
+$result1 = mysqli_query($link, $query1) or die(end_with_result('Error in SQL '.$query1));
 
-$numrows1 = mysql_num_rows($result1);
+$numrows1 = mysqli_num_rows($result1);
 if ($numrows1 > 0) {
     // get the status
-    while ($row1 = mysql_fetch_row($result1)) {
+    while ($row1 = mysqli_fetch_row($result1)) {
         $crashid = $row1[0];
         $applicationname = $row1[1];
 	    
@@ -68,15 +67,15 @@ if ($numrows1 > 0) {
         $logdata = "";
 
    	    $query = "SELECT log FROM ".$dbcrashtable." WHERE id = '".$crashid."' ORDER BY systemversion desc, timestamp desc LIMIT 1";
-        $result = mysql_query($query) or die(end_with_result('Error in SQL '.$query));
+        $result = mysqli_query($link, $query) or die(end_with_result('Error in SQL '.$query));
 
-        $numrows = mysql_num_rows($result);
+        $numrows = mysqli_num_rows($result);
         if ($numrows > 0) {
             // get the status
-            $row = mysql_fetch_row($result);
+            $row = mysqli_fetch_row($result);
             $logdata = $row[0];
 	
-            mysql_free_result($result);
+            mysqli_free_result($result);
         }
         
         $crash["bundleidentifier"] = $bundleidentifier;
@@ -89,10 +88,10 @@ if ($numrows1 > 0) {
         }        
     }
 	    
-    mysql_free_result($result1);
+    mysqli_free_result($result1);
 }
 
-mysql_close($link);
+mysqli_close($link);
 ?>
 <html>
 <head>

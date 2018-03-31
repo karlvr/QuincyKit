@@ -41,9 +41,8 @@ require_once('../config.php');
 
 $allowed_args = ',id,log,';
 
-$link = mysql_connect($server, $loginsql, $passsql)
+$link = mysqli_connect($server, $loginsql, $passsql, $base)
     or die('error');
-mysql_select_db($base) or die('error');
 
 foreach(array_keys($_POST) as $k) {
     $temp = ",$k,";
@@ -56,16 +55,16 @@ if (!isset($log)) $log = "";
 echo  $id." ".$log."\n";
 
 if ($id == "" || $log == "") {
-	mysql_close($link);
+	mysqli_close($link);
 	die('error');
 }
 
-$query = "UPDATE ".$dbcrashtable." SET log = '".mysql_real_escape_string($log)."' WHERE id = ".$id;
-$result = mysql_query($query) or die('Error in SQL '.$dbcrashtable);
+$query = "UPDATE ".$dbcrashtable." SET log = '".mysqli_real_escape_string($link, $log)."' WHERE id = ".$id;
+$result = mysqli_query($link, $query) or die('Error in SQL '.$dbcrashtable);
 
 if ($result) {
 	$query = "UPDATE ".$dbsymbolicatetable." SET done = 1 WHERE crashid = ".$id;
-	$result = mysql_query($query) or die('Error in SQL '.$dbsymbolicatetable);
+	$result = mysqli_query($link, $query) or die('Error in SQL '.$dbsymbolicatetable);
 	
 	if ($result)
 		echo "success";
@@ -75,7 +74,7 @@ if ($result) {
 	echo "error";
 }
 
-mysql_close($link);
+mysqli_close($link);
 
 
 ?>

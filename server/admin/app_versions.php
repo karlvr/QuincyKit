@@ -56,36 +56,36 @@ if (!isset($deletecrashes)) $deletecrashes = -1;
 // add the new app & version
 if ($version != "" && $deletecrashes == "1") {
 	$query = "DELETE FROM ".$dbsymbolicatetable." WHERE crashid in (select id from ".$dbcrashtable." where bundleidentifier = '".$bundleidentifier."' and version = '".$version."')";
-	$result = mysql_query($query) or die(end_with_result('Error in SQL '.$query));
+	$result = mysqli_query($GLOBALS['link'], $query) or die(end_with_result('Error in SQL '.$query));
 
 	$query = "DELETE FROM ".$dbcrashtable." WHERE bundleidentifier = '".$bundleidentifier."' and version = '".$version."'";
-	$result = mysql_query($query) or die(end_with_result('Error in SQL '.$query));
+	$result = mysqli_query($GLOBALS['link'], $query) or die(end_with_result('Error in SQL '.$query));
 	
     $query = "DELETE FROM ".$dbgrouptable." WHERE bundleidentifier = '".$bundleidentifier."' and affected = '".$version."'";
-    $result = mysql_query($query) or die(end_with_result('Error in SQL '.$query));
+    $result = mysqli_query($GLOBALS['link'], $query) or die(end_with_result('Error in SQL '.$query));
 } else if ($bundleidentifier != "" && $status != "" && $id == "" && $version != "") {
 	$query = "SELECT id FROM ".$dbversiontable." WHERE bundleidentifier = '".$bundleidentifier."' and version = '".$version."'";
-	$result = mysql_query($query) or die(end_with_result('Error in SQL '.$query));
+	$result = mysqli_query($GLOBALS['link'], $query) or die(end_with_result('Error in SQL '.$query));
 	
-	$numrows = mysql_num_rows($result);
+	$numrows = mysqli_num_rows($result);
 	if ($numrows == 1)
 	{
-		$row = mysql_fetch_row($result);
+		$row = mysqli_fetch_row($result);
 		$query2 = "UPDATE ".$dbversiontable." SET status = ".$status." WHERE id = ".$row[0];
-		$result2 = mysql_query($query2) or die(end_with_result('Error in SQL '.$query2));
+		$result2 = mysqli_query($GLOBALS['link'], $query2) or die(end_with_result('Error in SQL '.$query2));
 	} else if ($numrows == 0) {
 		// version is not available, so add it with status VERSION_STATUS_AVAILABLE
 		$query2 = "INSERT INTO ".$dbversiontable." (bundleidentifier, version, status) values ('".$bundleidentifier."', '".$version."', ".$status.")";
-		$result2 = mysql_query($query2) or die(end_with_result('Error in SQL '.$query2));
+		$result2 = mysqli_query($GLOBALS['link'], $query2) or die(end_with_result('Error in SQL '.$query2));
 	}
-	mysql_free_result($result);
+	mysqli_free_result($result);
 } else if ($id != "" && ($status != "" || $notify != "")) {
 	$query = "UPDATE ".$dbversiontable." SET status = ".$status.", notify = ".$notify." WHERE id = ".$id;
-	$result = mysql_query($query) or die(end_with_result('Error in SQL '.$query));
+	$result = mysqli_query($GLOBALS['link'], $query) or die(end_with_result('Error in SQL '.$query));
 } else if ($id != "" && $status == "") {
 	// delete a version
 	$query = "DELETE FROM ".$dbversiontable." WHERE id = '".$id."'";
-	$result = mysql_query($query) or die(end_with_result('Error in SQL '.$query));
+	$result = mysqli_query($GLOBALS['link'], $query) or die(end_with_result('Error in SQL '.$query));
 }
 
 show_header('- App Versions');
@@ -112,10 +112,10 @@ echo "<td><div id=\"osdiv\" style=\"height:280px;width:310px; \"></div></td></tr
 $crashestime = true;
 
 $query = "SELECT timestamp FROM ".$dbcrashtable."  WHERE bundleidentifier = '".$bundleidentifier."' ORDER BY timestamp desc";
-$result = mysql_query($query) or die(end_with_result('Error in SQL '.$query));
-$numrows = mysql_num_rows($result);
+$result = mysqli_query($GLOBALS['link'], $query) or die(end_with_result('Error in SQL '.$query));
+$numrows = mysqli_num_rows($result);
 if ($numrows > 0) {
-    while ($row = mysql_fetch_row($result)) {
+    while ($row = mysqli_fetch_row($result)) {
         $timestamp = $row[0];
         
         if ($timestamp != "" && ($timestampvalue = strtotime($timestamp)) !== false)
@@ -129,7 +129,7 @@ if ($numrows > 0) {
         }
     }
 }
-mysql_free_result($result);
+mysqli_free_result($result);
 
 
 $osticks = "";
@@ -137,18 +137,18 @@ $osvalues = "";
 $whereclause = "";
 
 $query2 = "SELECT systemversion, COUNT(systemversion) FROM ".$dbcrashtable.$whereclause." WHERE bundleidentifier = '".$bundleidentifier."' group by systemversion order by systemversion desc";
-$result2 = mysql_query($query2) or die(end_with_result('Error in SQL '.$query2));
-$numrows2 = mysql_num_rows($result2);
+$result2 = mysqli_query($GLOBALS['link'], $query2) or die(end_with_result('Error in SQL '.$query2));
+$numrows2 = mysqli_num_rows($result2);
 if ($numrows2 > 0) {
 	// get the status
-	while ($row2 = mysql_fetch_row($result2)) {
+	while ($row2 = mysqli_fetch_row($result2)) {
 		if ($osticks != "") $osticks = $osticks.", ";
 		$osticks .= "'".$row2[0]."'";
 		if ($osvalues != "") $osvalues = $osvalues.", ";
 		$osvalues .= $row2[1];
 	}
 }
-mysql_free_result($result2);
+mysqli_free_result($result2);
 
 // get the amount of crashes per system version
 $crashestime = true;
@@ -156,18 +156,18 @@ $crashestime = true;
 $platformticks = "";
 $platformvalues = "";
 $query = "SELECT platform, COUNT(platform) FROM ".$dbcrashtable." WHERE bundleidentifier = '".$bundleidentifier."' AND platform != \"\" group by platform order by platform desc";
-$result = mysql_query($query) or die(end_with_result('Error in SQL '.$query));
-$numrows = mysql_num_rows($result);
+$result = mysqli_query($GLOBALS['link'], $query) or die(end_with_result('Error in SQL '.$query));
+$numrows = mysqli_num_rows($result);
 if ($numrows > 0) {
 	// get the status
-	while ($row = mysql_fetch_row($result)) {
+	while ($row = mysqli_fetch_row($result)) {
 		if ($platformticks != "") $platformticks = $platformticks.", ";
 		$platformticks .= "'".$row[0]."'";
 		if ($platformvalues != "") $platformvalues = $platformvalues.", ";
 		$platformvalues .= $row[1];
 	}
 }
-mysql_free_result($result);
+mysqli_free_result($result);
 
 echo '</table>';
 
@@ -226,12 +226,12 @@ if ($acceptallapps)
 else
 	$query = "SELECT bundleidentifier, version, status, notify, id FROM ".$dbversiontable." WHERE bundleidentifier = '".$bundleidentifier."' ORDER BY bundleidentifier asc, INET_ATON(SUBSTRING_INDEX(CONCAT(version, '.0.0.0'),  '.', 4)) desc, status desc";
 
-$result = mysql_query($query) or die(end_with_result('Error in SQL '.$query));
+$result = mysqli_query($GLOBALS['link'], $query) or die(end_with_result('Error in SQL '.$query));
 
-$numrows = mysql_num_rows($result);
+$numrows = mysqli_num_rows($result);
 if ($numrows > 0) {
 	// get the status
-	while ($row = mysql_fetch_row($result))
+	while ($row = mysqli_fetch_row($result))
 	{
 		$bundleidentifier = $row[0];
 		$version = $row[1];
@@ -243,26 +243,26 @@ if ($numrows > 0) {
 		
 		// get the number of groups
 		$query2 = "SELECT count(*) FROM ".$dbgrouptable." WHERE bundleidentifier = '".$bundleidentifier."' and affected = '".$version."'";
-		$result2 = mysql_query($query2) or die(end_with_result('Error in SQL '.$$query2));
+		$result2 = mysqli_query($GLOBALS['link'], $query2) or die(end_with_result('Error in SQL '.$$query2));
 		
-		$numrows2 = mysql_num_rows($result2);
+		$numrows2 = mysqli_num_rows($result2);
 		if ($numrows2 > 0) {
-			$row2 = mysql_fetch_row($result2);
+			$row2 = mysqli_fetch_row($result2);
 			$groups = $row2[0];
 			
-			mysql_free_result($result2);
+			mysqli_free_result($result2);
 		}
 
 		// get the total number of crashes
 		$query2 = "SELECT count(*) FROM ".$dbcrashtable." WHERE bundleidentifier = '".$bundleidentifier."' and version = '".$version."'";
-		$result2 = mysql_query($query2) or die(end_with_result('Error in SQL '.$query2));
+		$result2 = mysqli_query($GLOBALS['link'], $query2) or die(end_with_result('Error in SQL '.$query2));
 		
-		$numrows2 = mysql_num_rows($result2);
+		$numrows2 = mysqli_num_rows($result2);
 		if ($numrows2 > 0) {
-			$row2 = mysql_fetch_row($result2);
+			$row2 = mysqli_fetch_row($result2);
 			$totalcrashes = $row2[0];
 			
-			mysql_free_result($result2);
+			mysqli_free_result($result2);
 		}
 		
 		echo "<form name='update".$id."' action='app_versions.php' method='get'><input type='hidden' name='id' value='".$id."'/><input type='hidden' name='bundleidentifier' value='".$bundleidentifier."'/>";
@@ -308,10 +308,10 @@ if ($numrows > 0) {
 		echo "</td></tr></table></form>";
 	}
 	
-	mysql_free_result($result);
+	mysqli_free_result($result);
 }
 
-mysql_close($link);
+mysqli_close($link);
 
 ?>
 <script type="text/javascript">

@@ -45,9 +45,8 @@ function end_with_result($result)
 
 $allowed_args = ',';
 
-$link = mysql_connect($server, $loginsql, $passsql)
+$link = mysqli_connect($server, $loginsql, $passsql, $base)
     or die(end_with_result('No database connection'));
-mysql_select_db($base) or die(end_with_result('No database connection'));
 
 foreach(array_keys($_GET) as $k) {
     $temp = ",$k,";
@@ -57,11 +56,11 @@ foreach(array_keys($_GET) as $k) {
 $crashids = "";
 
 $query = "SELECT crashid FROM ".$dbsymbolicatetable." WHERE done = 0";
-$result = mysql_query($query) or die(end_with_result('Error in SQL '.$dbsymbolicatetable));
+$result = mysqli_query($link, $query) or die(end_with_result('Error in SQL '.$dbsymbolicatetable));
 
-$numrows = mysql_num_rows($result);
+$numrows = mysqli_num_rows($result);
 if ($numrows > 0) {
-	while ($row = mysql_fetch_row($result))
+	while ($row = mysqli_fetch_row($result))
 	{
 		if ($crashids != '')
 			$crashids .= ',';
@@ -69,10 +68,10 @@ if ($numrows > 0) {
 		$crashids .= $row[0];
 
 	}
-	mysql_free_result($result);
+	mysqli_free_result($result);
 }
 
-mysql_close($link);
+mysqli_close($link);
 
 echo $crashids;
 ?>

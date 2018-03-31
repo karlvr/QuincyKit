@@ -70,8 +70,7 @@ function init_database()
 {
     global $server, $loginsql, $passsql, $base;
 
-    $GLOBALS['link'] = mysql_connect($server, $loginsql, $passsql) or die(end_with_result('No database connection'));
-    mysql_select_db($base) or die(end_with_result('No database connection'));
+    $GLOBALS['link'] = mysqli_connect($server, $loginsql, $passsql, $base) or die(end_with_result('No database connection'));
 }
 
 
@@ -179,12 +178,12 @@ function create_issue($bundleidentifier, $issuelink)
     global $dbapptable, $createIssueTitle;
     
     $query = "SELECT issuetrackerurl FROM ".$dbapptable." WHERE bundleidentifier = '".$bundleidentifier."'";
-    $result = mysql_query($query) or die(end_with_result('Error in SQL '.$query));
+    $result = mysqli_query($GLOBALS['link'], $query) or die(end_with_result('Error in SQL '.$query));
 
-    $numrows = mysql_num_rows($result);
+    $numrows = mysqli_num_rows($result);
     if ($numrows > 0) {
         // get the status
-        while ($row = mysql_fetch_row($result))
+        while ($row = mysqli_fetch_row($result))
         {
             if ($row[0] != "")
             {
@@ -419,42 +418,42 @@ function groupCrashReport($crash, $dblink, $notify) {
 
     // check if the version is already added and the status of the version and notify status
     $query = "SELECT id, status, notify FROM ".$dbversiontable." WHERE bundleidentifier = '".$bundleidentifier."' and version = '".$version."'";
-    $result = mysql_query($query);
+    $result = mysqli_query($dblink, $query);
     if (!$result) return FAILURE_SQL_CHECK_VERSION_EXISTS;
     
-    $numrows = mysql_num_rows($result);
+    $numrows = mysqli_num_rows($result);
     if ($numrows == 0) {
         // version is not available, so add it with status VERSION_STATUS_AVAILABLE
         $query = "INSERT INTO ".$dbversiontable." (bundleidentifier, version, status, notify) values ('".$bundleidentifier."', '".$version."', ".VERSION_STATUS_UNKNOWN.", ".$notify_default_version.")";
-        $result = mysql_query($query);
+        $result = mysqli_query($dblink, $query);
         if (!$result) return FAILURE_SQL_ADD_VERSION;
     } else {
-        $row = mysql_fetch_row($result);
+        $row = mysqli_fetch_row($result);
         $version_status = $row[1];
         $notify = $row[2];
-        mysql_free_result($result);
+        mysqli_free_result($result);
     }
     
     // if the offset string is not empty, we try a grouping
     if (strlen($crashPattern) > 0) {
         // get all the known bug patterns for the current app version
-        $query = "SELECT id, amount FROM ".$dbgrouptable." WHERE affected = '".$version."' and pattern = '".mysql_real_escape_string($crashPattern)."'";
-        $result = mysql_query($query);
+        $query = "SELECT id, amount FROM ".$dbgrouptable." WHERE affected = '".$version."' and pattern = '".mysqli_real_escape_string($dblink, $crashPattern)."'";
+        $result = mysqli_query($dblink, $query);
         if (!$result) return FAILURE_SQL_FIND_KNOWN_PATTERNS;
 
-        $numrows = mysql_num_rows($result);
+        $numrows = mysqli_num_rows($result);
         
         if ($numrows == 1) {
             // assign this bug to the group
-            $row = mysql_fetch_row($result);
+            $row = mysqli_fetch_row($result);
             $log_groupid = $row[0];
             $amount = $row[1];
 
-            mysql_free_result($result);
+            mysqli_free_result($result);
 
             // update the occurances of this pattern
-            $query = "UPDATE ".$dbgrouptable." SET amount=amount+1, latesttimestamp = ".time().", location='".mysql_real_escape_string($crashLocation)."', exception='".mysql_real_escape_string($crashException)."', reason='".mysql_real_escape_string($crashReason)."' WHERE id=".$log_groupid;
-            $result = mysql_query($query);
+            $query = "UPDATE ".$dbgrouptable." SET amount=amount+1, latesttimestamp = ".time().", location='".mysqli_real_escape_string($dblink, $crashLocation)."', exception='".mysqli_real_escape_string($dblink, $crashException)."', reason='".mysqli_real_escape_string($dblink, $crashReason)."' WHERE id=".$log_groupid;
+            $result = mysqli_query($dblink, $query);
             if (!$result) return FAILURE_SQL_UPDATE_PATTERN_OCCURANCES;
 
             if ($notify_amount_group > 1 && $notify_amount_group == $amount && $notify >= NOTIFY_ACTIVATED && $version_status != VERSION_STATUS_DISCONTINUED) {
@@ -488,14 +487,14 @@ function groupCrashReport($crash, $dblink, $notify) {
                 }
             }
 
-            mysql_free_result($result);
+            mysqli_free_result($result);
         } else if ($numrows == 0) {
             // create a new pattern for this bug and set amount of occurrances to 1
-            $query = "INSERT INTO ".$dbgrouptable." (bundleidentifier, affected, pattern, location, exception, reason, amount, latesttimestamp) values ('".$bundleidentifier."', '".$version."', '".$crashPattern."', '".mysql_real_escape_string($crashLocation)."', '".mysql_real_escape_string($crashException)."', '".mysql_real_escape_string($crashReason)."', 1, ".time().")";
-            $result = mysql_query($query);
+            $query = "INSERT INTO ".$dbgrouptable." (bundleidentifier, affected, pattern, location, exception, reason, amount, latesttimestamp) values ('".$bundleidentifier."', '".$version."', '".$crashPattern."', '".mysqli_real_escape_string($dblink, $crashLocation)."', '".mysqli_real_escape_string($dblink, $crashException)."', '".mysqli_real_escape_string($dblink, $crashReason)."', 1, ".time().")";
+            $result = mysqli_query($dblink, $query);
             if (!$result) return FAILURE_SQL_ADD_PATTERN;
 
-            $log_groupid = mysql_insert_id($dblink);
+            $log_groupid = mysqli_insert_id($dblink);
 
             if ($version_status != VERSION_STATUS_DISCONTINUED && $notify == NOTIFY_ACTIVATED) {
                 // send push notification
@@ -533,22 +532,22 @@ function groupCrashReport($crash, $dblink, $notify) {
     if (array_key_exists('id', $crash)) {
         // now insert the crashlog into the database
         $query = "UPDATE ".$dbcrashtable." SET groupid=".$log_groupid." WHERE id=".$crash["id"];
-        $result = mysql_query($query);
+        $result = mysqli_query($dblink, $query);
         if (!$result) return FAILURE_SQL_ADD_CRASHLOG;
         
         // TODO: update latesttimestamp of group
     } else {        
         // now insert the crashlog into the database
-      	$query = "INSERT INTO ".$dbcrashtable." (userid, username, contact, bundleidentifier, applicationname, systemversion, platform, senderversion, version, description, log, groupid, timestamp, jailbreak) values ('".$crash["userid"]."', '".$crash["username"]."', '".$crash["contact"]."', '".$bundleidentifier."', '".$crash["applicationname"]."', '".$crash["systemversion"]."', '".$crash["platform"]."', '".$crash["senderversion"]."', '".$version."', '".$crash["description"]."', '".mysql_real_escape_string($logdata)."', '".$log_groupid."', '".date("Y-m-d H:i:s")."', ".$jailbreak.")";
-      	$result = mysql_query($query);
+      	$query = "INSERT INTO ".$dbcrashtable." (userid, username, contact, bundleidentifier, applicationname, systemversion, platform, senderversion, version, description, log, groupid, timestamp, jailbreak) values ('".$crash["userid"]."', '".$crash["username"]."', '".$crash["contact"]."', '".$bundleidentifier."', '".$crash["applicationname"]."', '".$crash["systemversion"]."', '".$crash["platform"]."', '".$crash["senderversion"]."', '".$version."', '".$crash["description"]."', '".mysqli_real_escape_string($dblink, $logdata)."', '".$log_groupid."', '".date("Y-m-d H:i:s")."', ".$jailbreak.")";
+      	$result = mysqli_query($dblink, $query);
         if (!$result) return FAILURE_SQL_ADD_CRASHLOG;
 
-      	$new_crashid = mysql_insert_id($dblink);
+      	$new_crashid = mysqli_insert_id($dblink);
 
         // if this crash log has to be manually symbolicated, add a todo entry
         if ($crash["symbolicate"]) {
           $query = "INSERT INTO ".$dbsymbolicatetable." (crashid, done) values (".$new_crashid.", 0)";
-          $result = mysql_query($query);
+          $result = mysqli_query($dblink, $query);
           if (!$result) return FAILURE_SQL_ADD_SYMBOLICATE_TODO;
       	}
     }

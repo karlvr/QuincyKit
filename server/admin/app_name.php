@@ -71,7 +71,7 @@ if ($id != "" && $symbolicate != "") {
 	$query = "DELETE FROM ".$dbapptable." WHERE id = ".$id;
 }
 if ($query != "")
-	$result = mysql_query($query) or die(end_with_result('Error in SQL '.$query));
+	$result = mysqli_query($GLOBALS['link'], $query) or die(end_with_result('Error in SQL '.$query));
 
 show_header('- Apps');
 
@@ -111,12 +111,12 @@ if (!$acceptallapps)
 
 // get all applications and their symbolication status
 $query = "SELECT bundleidentifier, symbolicate, id, name, issuetrackerurl, notifyemail, notifypush, hockeyappidentifier FROM ".$dbapptable." ORDER BY bundleidentifier asc, symbolicate desc";
-$result = mysql_query($query) or die(end_with_result('Error in SQL '.$query));
+$result = mysqli_query($GLOBALS['link'], $query) or die(end_with_result('Error in SQL '.$query));
 
-$numrows = mysql_num_rows($result);
+$numrows = mysqli_num_rows($result);
 if ($numrows > 0) {
 	// get the status
-	while ($row = mysql_fetch_row($result))
+	while ($row = mysqli_fetch_row($result))
 	{
 		$bundleidentifier = $row[0];
 		$symbolicate = $row[1];
@@ -154,15 +154,15 @@ if ($numrows > 0) {
 		
 		// get the total number of crashes
         $query2 = "SELECT count(*) FROM ".$dbcrashtable." WHERE bundleidentifier = '".$bundleidentifier."'";
-        $result2 = mysql_query($query2) or die(end_with_result('Error in SQL '.$query2));
+        $result2 = mysqli_query($GLOBALS['link'], $query2) or die(end_with_result('Error in SQL '.$query2));
 
         $totalcrashes = 0;
-        $numrows2 = mysql_num_rows($result2);
+        $numrows2 = mysqli_num_rows($result2);
         if ($numrows2 > 0) {
-            $row2 = mysql_fetch_row($result2);
+            $row2 = mysqli_fetch_row($result2);
             $totalcrashes = $row2[0];
             
-            mysql_free_result($result2);
+            mysqli_free_result($result2);
         }
         
         echo $totalcrashes . "</td>";
@@ -172,10 +172,10 @@ if ($numrows > 0) {
 		echo "</tr></table></form>";
 	}
 	
-	mysql_free_result($result);
+	mysqli_free_result($result);
 }
 
-mysql_close($link);
+mysqli_close($link);
 
 echo '</body></html>';
 

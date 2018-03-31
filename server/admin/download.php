@@ -43,9 +43,8 @@ function end_with_result($result)
 
 $allowed_args = ',groupid,crashid,';
 
-$link = mysql_connect($server, $loginsql, $passsql)
+$link = mysqli_connect($server, $loginsql, $passsql, $base)
     or die(end_with_result('No database connection'));
-mysql_select_db($base) or die(end_with_result('No database connection'));
 
 foreach(array_keys($_GET) as $k) {
     $temp = ",$k,";
@@ -63,12 +62,12 @@ if ($groupid != "") {
 } else {
 	$query = "SELECT userid, contact, systemversion, description, log, timestamp FROM ".$dbcrashtable." WHERE id = '".$crashid."' ORDER BY systemversion desc, timestamp desc LIMIT 1";
 }
-$result = mysql_query($query) or die(end_with_result('Error in SQL '.$query));
+$result = mysqli_query($link, $query) or die(end_with_result('Error in SQL '.$query));
 
-$numrows = mysql_num_rows($result);
+$numrows = mysqli_num_rows($result);
 if ($numrows > 0) {
 	// get the status
-	$row = mysql_fetch_row($result);
+	$row = mysqli_fetch_row($result);
 	$userid = $row[0];
 	$contact = $row[1];
 	$systemversion = $row[2];
@@ -83,11 +82,11 @@ if ($numrows > 0) {
 	header('Content-Disposition: attachment; filename="'.$timestamp.'.crash"');
 	echo $log;
 	
-	mysql_free_result($result);
+	mysqli_free_result($result);
 } else {
 	echo '<html><head></head><body>Nothing found!</body></html>';
 }
 
-mysql_close($link);
+mysqli_close($link);
 
 ?>

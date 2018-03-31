@@ -47,88 +47,88 @@ if ($action == "") die('Wrong parameters');
 
 if ($action == "deletecrashid" && $id != "") {
     $query = "DELETE FROM ".$dbsymbolicatetable." WHERE crashid = ".$id;
-    $result = mysql_query($query) or die('Error in SQL '.$query);
+    $result = mysqli_query($GLOBALS['link'], $query) or die('Error in SQL '.$query);
 
     $query = "DELETE from " . $dbcrashtable . " WHERE id=" . $id;
-    $result = mysql_query($query) or die('Error in SQL '.$query);
+    $result = mysqli_query($GLOBALS['link'], $query) or die('Error in SQL '.$query);
         
     if ($groupid != "" && $groupid > -1) {
         // adjust amount and timestamp
         $query = "SELECT amount, latesttimestamp FROM ".$dbgrouptable." WHERE id = ".$groupid;
-        $result = mysql_query($query) or die('Error in SQL: '.$query);
+        $result = mysqli_query($GLOBALS['link'], $query) or die('Error in SQL: '.$query);
         
-        $numrows = mysql_num_rows($result);
+        $numrows = mysqli_num_rows($result);
         if ($numrows > 0) {
             // get the status
-            while ($row = mysql_fetch_row($result)) {
+            while ($row = mysqli_fetch_row($result)) {
                 $amount = $row[0];
                 $latest = $row[1];
                 $lastupdate = 0;
                 
                 if ($amount > 0) {
                     $query2 = "SELECT max(UNIX_TIMESTAMP(timestamp)) FROM ".$dbcrashtable." WHERE groupid = '".$groupid."'";
-                    $result2 = mysql_query($query2) or die('Error in SQL '.$query2);
-                    $numrows2 = mysql_num_rows($result2);
+                    $result2 = mysqli_query($GLOBALS['link'], $query2) or die('Error in SQL '.$query2);
+                    $numrows2 = mysqli_num_rows($result2);
                     if ($numrows2 > 0) {
-                        $row2 = mysql_fetch_row($result2);
+                        $row2 = mysqli_fetch_row($result2);
                         $lastupdate = $row2[0];
                         if ($lastupdate == "") $lastupdate = 0;
                     }
-                    mysql_free_result($result2);
+                    mysqli_free_result($result2);
                     
                     $query2 = "UPDATE ".$dbgrouptable." SET latesttimestamp = ".$lastupdate." WHERE id = ".$groupid;
-                    $result2 = mysql_query($query2) or die('Error in SQL '.$query2);
+                    $result2 = mysqli_query($GLOBALS['link'], $query2) or die('Error in SQL '.$query2);
                 }
             }
         }
-        mysql_free_result($result);
+        mysqli_free_result($result);
         
         $query = "UPDATE ".$dbgrouptable." SET amount=amount-1 WHERE id=".$groupid;
-        $result = mysql_query($query) or die('Error in SQL '.$query);
+        $result = mysqli_query($GLOBALS['link'], $query) or die('Error in SQL '.$query);
     }
 } else if ($action == "deletegroupid" && $id != "") {
     $query = "DELETE FROM ".$dbsymbolicatetable." WHERE crashid in (select id from ".$dbcrashtable." where groupid = ".$id.")";
-    $result = mysql_query($query) or die('Error in SQL '.$query);
+    $result = mysqli_query($GLOBALS['link'], $query) or die('Error in SQL '.$query);
     
     $query = "DELETE FROM ".$dbcrashtable." WHERE groupid = ".$id;
-    $result = mysql_query($query) or die('Error in SQL '.$query);
+    $result = mysqli_query($GLOBALS['link'], $query) or die('Error in SQL '.$query);
     
     $query = "DELETE FROM ".$dbgrouptable." WHERE id = ".$id;
-    $result = mysql_query($query) or die('Error in SQL '.$query);
+    $result = mysqli_query($GLOBALS['link'], $query) or die('Error in SQL '.$query);
 } else if ($action == "deletegroups" && $bundleidentifier != "" && $version != "") {
     $query = "DELETE FROM ".$dbsymbolicatetable." WHERE crashid in (select id from ".$dbcrashtable." where bundleidentifier = '".$bundleidentifier."' and version = '".$version."')";
-    $result = mysql_query($query) or die('Error in SQL '.$query);
+    $result = mysqli_query($GLOBALS['link'], $query) or die('Error in SQL '.$query);
     
     $query = "DELETE FROM ".$dbcrashtable." WHERE bundleidentifier = '".$bundleidentifier."' and version = '".$version."'";
-    $result = mysql_query($query) or die('Error in SQL '.$query);
+    $result = mysqli_query($GLOBALS['link'], $query) or die('Error in SQL '.$query);
     
     $query = "DELETE FROM ".$dbgrouptable." WHERE bundleidentifier = '".$bundleidentifier."' and affected = '".$version."'";
-    $result = mysql_query($query) or die('Error in SQL '.$query);
+    $result = mysqli_query($GLOBALS['link'], $query) or die('Error in SQL '.$query);
 } else if ($action == "updategroupid" && $id != "") {
-  $query = "UPDATE ".$dbgrouptable." SET description = '".mysql_real_escape_string($description)."' WHERE id = ".$id;
-  $result = mysql_query($query) or die('Error in SQL '.$query);
+  $query = "UPDATE ".$dbgrouptable." SET description = '".mysqli_real_escape_string($GLOBALS['link'], $description)."' WHERE id = ".$id;
+  $result = mysqli_query($GLOBALS['link'], $query) or die('Error in SQL '.$query);
 } else if ($action == "symbolicatecrashid" && $id != "") {
     $query = "SELECT id FROM ".$dbsymbolicatetable." WHERE crashid = ".$id;
-    $result = mysql_query($query) or die('Error in SQL '.$query);
+    $result = mysqli_query($GLOBALS['link'], $query) or die('Error in SQL '.$query);
     
-    $numrows = mysql_num_rows($result);
-    mysql_free_result($result);
+    $numrows = mysqli_num_rows($result);
+    mysqli_free_result($result);
     
     if ($numrows > 0)
         $query = "UPDATE ".$dbsymbolicatetable." SET done = 0 WHERE crashid = ".$id;
     else
         $query = "INSERT INTO ".$dbsymbolicatetable." (crashid, done) values (".$id.", 0)";
     
-    $result = mysql_query($query) or die('Error in SQL '.$query);	
+    $result = mysqli_query($GLOBALS['link'], $query) or die('Error in SQL '.$query);	
 } else if ($action == "getsymbolicationtodo") {
     $crashids = "";
     
     $query = "SELECT crashid FROM ".$dbsymbolicatetable." WHERE done = 0";
-    $result = mysql_query($query) or die('Error in SQL '.$query);
+    $result = mysqli_query($GLOBALS['link'], $query) or die('Error in SQL '.$query);
     
-    $numrows = mysql_num_rows($result);
+    $numrows = mysqli_num_rows($result);
     if ($numrows > 0) {
-        while ($row = mysql_fetch_row($result))
+        while ($row = mysqli_fetch_row($result))
         {
             if ($crashids != '')
                 $crashids .= ',';
@@ -136,33 +136,33 @@ if ($action == "deletecrashid" && $id != "") {
             $crashids .= $row[0];
     
         }
-        mysql_free_result($result);
+        mysqli_free_result($result);
     }
     
     echo $crashids;
 } else if ($action == "getlogcrashid" && $id != "") {
     $query = "SELECT log FROM ".$dbcrashtable." WHERE id = ".$id;
-    $result = mysql_query($query) or die('Error in SQL '.$query);
+    $result = mysqli_query($GLOBALS['link'], $query) or die('Error in SQL '.$query);
     
-    $numrows = mysql_num_rows($result);
+    $numrows = mysqli_num_rows($result);
     if ($numrows > 0) {
-        while ($row = mysql_fetch_row($result))
+        while ($row = mysqli_fetch_row($result))
         {
             echo $row[0];
         }
-        mysql_free_result($result);
+        mysqli_free_result($result);
     }
 } else if ($action == "getdescriptioncrashid" && $id != "") {
     $query = "SELECT description FROM ".$dbcrashtable." WHERE id = ".$id;
-    $result = mysql_query($query) or die('Error in SQL '.$query);
+    $result = mysqli_query($GLOBALS['link'], $query) or die('Error in SQL '.$query);
     
-    $numrows = mysql_num_rows($result);
+    $numrows = mysqli_num_rows($result);
     if ($numrows > 0) {
-        while ($row = mysql_fetch_row($result))
+        while ($row = mysqli_fetch_row($result))
         {
             echo $row[0];
         }
-        mysql_free_result($result);
+        mysqli_free_result($result);
     }
 } else if ($action == "downloadcrashid" && ($id != "" || $groupid != "")) {
     $query = "";
@@ -171,12 +171,12 @@ if ($action == "deletecrashid" && $id != "") {
     } else {
         $query = "SELECT log, timestamp FROM ".$dbcrashtable." WHERE id = '".$id."' ORDER BY systemversion desc, timestamp desc LIMIT 1";
     }
-    $result = mysql_query($query) or die('Error in SQL '.$query);
+    $result = mysqli_query($GLOBALS['link'], $query) or die('Error in SQL '.$query);
     
-    $numrows = mysql_num_rows($result);
+    $numrows = mysqli_num_rows($result);
     if ($numrows > 0) {
         // get the status
-        $row = mysql_fetch_row($result);
+        $row = mysqli_fetch_row($result);
         $log = $row[0];
         $timestamp = $row[1];
         
@@ -187,14 +187,14 @@ if ($action == "deletecrashid" && $id != "") {
         header('Content-Disposition: attachment; filename="'.$timestamp.'.crash"');
         echo $log;
         
-        mysql_free_result($result);
+        mysqli_free_result($result);
     }
 } else {
     die('Wrong parameters');
 }
 
 
-mysql_close($link);
+mysqli_close($link);
 
 
 ?>

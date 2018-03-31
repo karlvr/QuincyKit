@@ -70,10 +70,10 @@ $crashvalues = "";
 // get the amount of crashes over time
 
 $query = "SELECT timestamp FROM ".$dbcrashtable."  WHERE bundleidentifier = '".$bundleidentifier."' AND version = '".$version."' ORDER BY timestamp desc";
-$result = mysql_query($query) or die(end_with_result('Error in SQL '.$query));
-$numrows = mysql_num_rows($result);
+$result = mysqli_query($GLOBALS['link'], $query) or die(end_with_result('Error in SQL '.$query));
+$numrows = mysqli_num_rows($result);
 if ($numrows > 0) {
-  while ($row = mysql_fetch_row($result)) {
+  while ($row = mysqli_fetch_row($result)) {
     $timestamp = $row[0];
         
     if ($timestamp != "" && ($timestampvalue = strtotime($timestamp)) !== false)
@@ -87,7 +87,7 @@ if ($numrows > 0) {
     }
   }
 }
-mysql_free_result($result);
+mysqli_free_result($result);
 
 
 $cols2 = '<colgroup><col width="320"/><col width="320"/><col width="320"/></colgroup>';
@@ -105,18 +105,18 @@ $osvalues = "";
 $whereclause = "";
 
 $query2 = "SELECT systemversion, COUNT(systemversion) FROM ".$dbcrashtable.$whereclause." WHERE bundleidentifier = '".$bundleidentifier."' AND version = '".$version."' group by systemversion order by systemversion desc";
-$result2 = mysql_query($query2) or die(end_with_result('Error in SQL '.$query2));
-$numrows2 = mysql_num_rows($result2);
+$result2 = mysqli_query($GLOBALS['link'], $query2) or die(end_with_result('Error in SQL '.$query2));
+$numrows2 = mysqli_num_rows($result2);
 if ($numrows2 > 0) {
 	// get the status
-	while ($row2 = mysql_fetch_row($result2)) {
+	while ($row2 = mysqli_fetch_row($result2)) {
 		if ($osticks != "") $osticks = $osticks.", ";
 		$osticks .= "'".$row2[0]."'";
 		if ($osvalues != "") $osvalues = $osvalues.", ";
 		$osvalues .= $row2[1];
 	}
 }
-mysql_free_result($result2);
+mysqli_free_result($result2);
 
 // get the amount of crashes per system version
 $crashestime = true;
@@ -124,18 +124,18 @@ $crashestime = true;
 $platformticks = "";
 $platformvalues = "";
 $query = "SELECT platform, COUNT(platform) FROM ".$dbcrashtable." WHERE bundleidentifier = '".$bundleidentifier."' AND version = '".$version."' AND platform != \"\" group by platform order by platform desc";
-$result = mysql_query($query) or die(end_with_result('Error in SQL '.$query));
-$numrows = mysql_num_rows($result);
+$result = mysqli_query($GLOBALS['link'], $query) or die(end_with_result('Error in SQL '.$query));
+$numrows = mysqli_num_rows($result);
 if ($numrows > 0) {
 	// get the status
-	while ($row = mysql_fetch_row($result)) {
+	while ($row = mysqli_fetch_row($result)) {
 		if ($platformticks != "") $platformticks = $platformticks.", ";
 		$platformticks .= "'".$row[0]."'";
 		if ($platformvalues != "") $platformvalues = $platformvalues.", ";
 		$platformvalues .= $row[1];
 	}
 }
-mysql_free_result($result);
+mysqli_free_result($result);
 echo '</table>';
 
 
@@ -163,12 +163,12 @@ echo '<div id="groups">';
 
 // get all groups
 $query = "SELECT id, amount, latesttimestamp, location, exception, reason, description FROM ".$dbgrouptable." WHERE bundleidentifier = '".$bundleidentifier."' AND affected = '".$version."' ORDER BY amount desc, location asc";
-$result = mysql_query($query) or die(end_with_result('Error in SQL '.$query));
+$result = mysqli_query($GLOBALS['link'], $query) or die(end_with_result('Error in SQL '.$query));
 
-$numrows = mysql_num_rows($result);
+$numrows = mysqli_num_rows($result);
 if ($numrows > 0) {
 	// get the status
-	while ($row = mysql_fetch_row($result)) {
+	while ($row = mysqli_fetch_row($result)) {
 		$groupid = $row[0];
 		$amount = $row[1];
 		$lastupdate = $row[2];
@@ -215,16 +215,16 @@ if ($numrows > 0) {
 		echo '</form>';
 	}
 	
-	mysql_free_result($result);
+	mysqli_free_result($result);
 }
 
 // get all crash reports not assigned to groups
 $query = "SELECT count(*) FROM ".$dbcrashtable." WHERE groupid = 0 and bundleidentifier = '".$bundleidentifier."' AND version = '".$version."'";
-$result = mysql_query($query) or die(end_with_result('Error in SQL '.$dbcrashtable));
+$result = mysqli_query($GLOBALS['link'], $query) or die(end_with_result('Error in SQL '.$dbcrashtable));
 
-$numrows = mysql_num_rows($result);
+$numrows = mysqli_num_rows($result);
 if ($numrows > 0) {
-	$row = mysql_fetch_row($result);
+	$row = mysqli_fetch_row($result);
 	$amount = $row[0];
 	if ($amount > 0) {
         echo '<table class="hover">'.$cols;
@@ -234,10 +234,10 @@ if ($numrows > 0) {
 		echo "<a href='groups.php?bundleidentifier=".$bundleidentifier."&version=".$version."&groupid=0' class='button redButton' onclick='return confirm(\"Do you really want to delete this item?\");'>Delete</a></td></tr>";
 		echo '</table>';
 	}
-	mysql_free_result($result);
+	mysqli_free_result($result);
 }
 
-mysql_close($link);
+mysqli_close($link);
 
 ?>
 </div>

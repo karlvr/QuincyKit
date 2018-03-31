@@ -62,14 +62,12 @@ else
 echo "<br>";
 
 echo "Database access: ";
-$link = mysql_connect($server, $loginsql, $passsql);
+$link = mysqli_connect($server, $loginsql, $passsql, $base);
 if ($link === false) echo "FAILED";
 else {
-    if (mysql_select_db($base) === false) echo "FAILED";
-    else
-        echo "passed";
+    echo "passed";
         
-    mysql_close($link);
+    mysqli_close($link);
 }
 echo "<br>";
 	
