@@ -50,7 +50,6 @@
 - `/server/config.php` contains database access information
 - `/server/test_setup.php` simple script that checks if everything required on the server is available
 - `/server/admin/` contains all administration scripts
-- `/server/admin/symbolicate.php` needs to be copied to a local Mac, and the url has to be adjusted to access the scripts on your server
 
 
 # SERVER INSTALLATION
@@ -64,7 +63,7 @@ The server requires at least PHP 5.2 and a MySQL server installation!
 
 ## SERVER DATABASE CONFIGURATION
 
-- Adjust settings in `/server/CONFIG.PHP`:
+- Adjust settings in `/server/config.php`:
 
     $server = 'your.server.com';            // database server hostname
     $loginsql = 'database_username';        // username to access the database
@@ -92,7 +91,7 @@ Database schema and clients changed. Therefor it is recommended to setup a new i
 
 - **NOTICE**: Push Notification requires the Server PHP installation to have curl addon installed!
 - **NOTICE**: Push Notifications are implemented using Prowl iPhone app and web service, you need the app and an Prowl API key!
-- Adjust settings in `/server/CONFIG.PHP`:
+- Adjust settings in `/server/config.php`:
     - set `$push_activated` to true
     - if you don't want a push message for every new pattern, set `$push_newtype` to false
     - adjust `$notify_amount_group` to the amount of crash occurences of a pattern when a push message should be sent
