@@ -283,7 +283,7 @@ $lastError = 0;
 // store the best version status to return feedback
 $best_status = VERSION_STATUS_UNKNOWN;
 
-// go through all crah reports
+// go through all crash reports
 foreach ($crashes as $crash) {
 
   // don't proceed if we don't have anything to search for
