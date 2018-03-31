@@ -88,11 +88,11 @@ function doPost($postdata)
 
 if ($webuser != "" && $webpwd != "")
 {
-    $downloadtodosurl = "http://".$webuser.":".$webpwd."@".$hostname.$downloadtodosurl;
-    $getcrashdataurl = "http://".$webuser.":".$webpwd."@".$hostname.$getcrashdataurl;
+    $downloadtodosurl = "$scheme://".$webuser.":".$webpwd."@".$hostname.$downloadtodosurl;
+    $getcrashdataurl = "$scheme://".$webuser.":".$webpwd."@".$hostname.$getcrashdataurl;
 } else {
-    $downloadtodosurl = "http://".$hostname.$downloadtodosurl;
-    $getcrashdataurl = "http://".$hostname.$getcrashdataurl;
+    $downloadtodosurl = "$scheme://".$hostname.$downloadtodosurl;
+    $getcrashdataurl = "$scheme://".$hostname.$getcrashdataurl;
 }
 
 

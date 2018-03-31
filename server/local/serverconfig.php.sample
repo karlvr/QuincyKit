@@ -29,6 +29,7 @@
 	 * OTHER DEALINGS IN THE SOFTWARE.
 	 */
 
+$scheme = 'https';                                  // the scheme to use to connect e.g. http or https
 $hostname = 'your.server.com';                      // the server hosting the scripts
 $webuser = '';                                      // if you restricted /admin/ with .htaccess
 $webpwd = '';                                       // if you restricted /admin/ with .htaccess
