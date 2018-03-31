@@ -552,11 +552,17 @@ function groupCrashReport($crash, $dblink, $notify) {
         // now update the crashlog in the database to put it in this group
         $query = "UPDATE ".$dbcrashtable." SET groupid=".$log_groupid." WHERE id=".$crash["id"];
         $result = mysqli_query($dblink, $query);
+        if (!$result) {
+            error_log("Failed to update crash in the database: " . mysqli_error($dblink));
+        }
         if (!$result) return FAILURE_SQL_ADD_CRASHLOG;
     } else {        
         // now insert the crashlog into the database
       	$query = "INSERT INTO ".$dbcrashtable." (userid, username, contact, bundleidentifier, applicationname, systemversion, platform, senderversion, version, description, log, groupid, timestamp, jailbreak) values ('".$crash["userid"]."', '".$crash["username"]."', '".$crash["contact"]."', '".$bundleidentifier."', '".$crash["applicationname"]."', '".$crash["systemversion"]."', '".$crash["platform"]."', '".$crash["senderversion"]."', '".$version."', '".$crash["description"]."', '".mysqli_real_escape_string($dblink, $logdata)."', '".$log_groupid."', '".date("Y-m-d H:i:s")."', ".$jailbreak.")";
       	$result = mysqli_query($dblink, $query);
+        if (!$result) {
+            error_log("Failed to insert crash into the database: " . mysqli_error($dblink));
+        }
         if (!$result) return FAILURE_SQL_ADD_CRASHLOG;
 
       	$new_crashid = mysqli_insert_id($dblink);
