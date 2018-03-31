@@ -64,7 +64,7 @@ textarea.description {
 }
 div.short {
     width:200px;
-    height:300px;
+    height:100%;
     font-size:90%;
     color:#000;
     background:#fff;
@@ -74,7 +74,7 @@ div.short {
 }
 div.log {
     width:710px;
-    height:300px;
+    height:100%;
     font-size:90%;
     color:#000;
     border: 1px;
