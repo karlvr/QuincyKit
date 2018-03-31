@@ -107,6 +107,15 @@ if (!$result1) {
 	die("Failed to delete defunct crash groups: " . mysqli_error($link));
 }
 
+// recalculate group stats
+$query1 = "UPDATE ".$dbgrouptable." SET amount = (SELECT count(*) FROM ".$dbcrashtable." WHERE groupid=".$dbgrouptable.".id), ".
+    "latesttimestamp = (SELECT UNIX_TIMESTAMP(MAX(timestamp)) FROM ".$dbcrashtable." WHERE groupid=".$dbgrouptable.".id) ".
+    "WHERE bundleidentifier = '".$bundleidentifier."' AND affected = '".$version."'";
+$result1 = mysqli_query($link, $query1);
+if (!$result1) {
+    die("Failed to update crash groups stats: " . mysqli_error($link));
+}
+
 mysqli_close($link);
 ?>
 <html>
