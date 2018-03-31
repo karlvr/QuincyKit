@@ -239,6 +239,12 @@ if ($numrows > 0) {
 
 mysqli_close($link);
 
+// Always show regroup option
+echo '<table class="hover">'.$cols;
+echo "<tr>";
+echo "<td><a href='regroup.php?bundleidentifier=".$bundleidentifier."&version=".$version."' class='button'>Re-Group</a>";
+echo "</td></tr>";
+echo '</table>';
 ?>
 </div>
 <script type="text/javascript">

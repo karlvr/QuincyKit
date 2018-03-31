@@ -29,9 +29,10 @@
 	 */
 
 //
-// Download a crash
+// Regroup crashes
 //
-// This script downloads a given crash to a local file
+// This script takes parameters that specify which crashes to regroup.
+// It then regroups them.
 //
 
 require_once('../config.php');
@@ -49,11 +50,14 @@ foreach(array_keys($_GET) as $k) {
 
 if (!isset($bundleidentifier)) $bundleidentifier = "";
 if (!isset($version)) $version = "";
-if (!isset($groupid)) $groupid = "0";
 
 if ($bundleidentifier == "" || $version == "") die(end_with_result('Wrong parameters'));
 
-$query1 = "SELECT id, applicationname FROM ".$dbcrashtable." WHERE groupid = '".$groupid."' and version = '".$version."' and bundleidentifier = '".$bundleidentifier."'";
+$query1 = "SELECT id, applicationname FROM ".$dbcrashtable." WHERE ";
+if (isset($groupid)) {
+	$query1 .= "groupid = '".$groupid."' and ";
+}
+$query1 .= "version = '".$version."' and bundleidentifier = '".$bundleidentifier."'";
 $result1 = mysqli_query($link, $query1) or die(end_with_result('Error in SQL '.$query1));
 
 $numrows1 = mysqli_num_rows($result1);
