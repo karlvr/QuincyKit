@@ -95,6 +95,14 @@ if ($numrows1 > 0) {
     mysqli_free_result($result1);
 }
 
+// remove defunct crash groups
+$query1 = "DELETE FROM ".$dbgrouptable." WHERE bundleidentifier = '".$bundleidentifier."' AND affected = '".$version."' ".
+	"AND NOT EXISTS (SELECT id FROM ".$dbcrashtable." WHERE groupid=".$dbgrouptable.".id)";
+$result1 = mysqli_query($link, $query1);
+if (!$result1) {
+	die("Failed to delete defunct crash groups: " . mysqli_error($link));
+}
+
 mysqli_close($link);
 ?>
 <html>
