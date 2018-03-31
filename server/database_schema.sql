@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS `crash` (
   `senderversion` varchar(15) collate utf8_unicode_ci NOT NULL default '',
   `version` varchar(15) collate utf8_unicode_ci default NULL,
   `description` mediumtext collate utf8_unicode_ci,
-  `log` text collate utf8_unicode_ci NOT NULL,
+  `log` longtext collate utf8_unicode_ci NOT NULL,
   `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
   `groupid` bigint(20) unsigned default '0',
   `jailbreak` int(11) unsigned default '0',
