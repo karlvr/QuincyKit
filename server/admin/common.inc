@@ -436,14 +436,14 @@ function groupCrashReport($crash, $dblink, $notify) {
     
     // if the offset string is not empty, we try a grouping
     if (strlen($crashPattern) > 0) {
-        // get all the known bug patterns for the current app version
+        // look for a matching bug pattern for the current app version
         $query = "SELECT id, amount FROM ".$dbgrouptable." WHERE affected = '".$version."' and pattern = '".mysqli_real_escape_string($dblink, $crashPattern)."'";
         $result = mysqli_query($dblink, $query);
         if (!$result) return FAILURE_SQL_FIND_KNOWN_PATTERNS;
 
         $numrows = mysqli_num_rows($result);
         
-        if ($numrows == 1) {
+        if ($numrows > 0) {
             // assign this bug to the group
             $row = mysqli_fetch_row($result);
             $log_groupid = $row[0];
@@ -451,8 +451,18 @@ function groupCrashReport($crash, $dblink, $notify) {
 
             mysqli_free_result($result);
 
+            $timestamp = time();
+            if (isset($crash['timestamp'])) {
+                // use timestamp from existing crash
+                $timestamp = strtotime($crash['timestamp']);
+            }
+
             // update the occurences of this pattern
-            $query = "UPDATE ".$dbgrouptable." SET amount=amount+1, latesttimestamp = ".time().", location='".mysqli_real_escape_string($dblink, $crashLocation)."', exception='".mysqli_real_escape_string($dblink, $crashException)."', reason='".mysqli_real_escape_string($dblink, $crashReason)."' WHERE id=".$log_groupid;
+            $query = "UPDATE ".$dbgrouptable." SET ";
+            if (!isset($crash['groupid']) || $crash['groupid'] != $log_groupid) {
+                $query .= "amount=amount+1, ";
+            }
+            $query .= "latesttimestamp = GREATEST(latesttimestamp, ".$timestamp."), location='".mysqli_real_escape_string($dblink, $crashLocation)."', exception='".mysqli_real_escape_string($dblink, $crashException)."', reason='".mysqli_real_escape_string($dblink, $crashReason)."' WHERE id=".$log_groupid;
             $result = mysqli_query($dblink, $query);
             if (!$result) return FAILURE_SQL_UPDATE_PATTERN_OCCURANCES;
 
@@ -530,6 +540,16 @@ function groupCrashReport($crash, $dblink, $notify) {
     }
     
     if (array_key_exists('id', $crash)) {
+        if (isset($crash['groupid'])) {
+            $existing_groupid = $crash['groupid'];
+            if ($existing_groupid != $log_groupid) {
+                // correct amount in existing group, we don't currently correct latesttimestamp as we'd need
+                // to query all crashes remaining in the group
+                $query = "UPDATE ".$dbgrouptable." SET amount = amount - 1 WHERE id='".$existing_groupid."'";
+                mysqli_query($dblink, $query);
+            }
+        }
+
         // now update the crashlog in the database to put it in this group
         $query = "UPDATE ".$dbcrashtable." SET groupid=".$log_groupid." WHERE id=".$crash["id"];
         $result = mysqli_query($dblink, $query);

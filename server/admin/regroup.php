@@ -53,7 +53,7 @@ if (!isset($version)) $version = "";
 
 if ($bundleidentifier == "" || $version == "") die(end_with_result('Wrong parameters'));
 
-$query1 = "SELECT id, applicationname FROM ".$dbcrashtable." WHERE ";
+$query1 = "SELECT id, applicationname, timestamp, groupid FROM ".$dbcrashtable." WHERE ";
 if (isset($groupid)) {
 	$query1 .= "groupid = '".$groupid."' and ";
 }
@@ -66,6 +66,8 @@ if ($numrows1 > 0) {
     while ($row1 = mysqli_fetch_row($result1)) {
         $crashid = $row1[0];
         $applicationname = $row1[1];
+        $timestamp = $row1[2];
+        $crashgroupid = $row1[3];
 	    
 	    // get the log data
         $logdata = "";
@@ -86,6 +88,8 @@ if ($numrows1 > 0) {
         $crash["version"] = $version;
         $crash["logdata"] = $logdata;
         $crash["id"] = $crashid;
+		$crash["timestamp"] = $timestamp;
+		$crash["groupid"] = $crashgroupid;
         $error = groupCrashReport($crash, $link, NOTIFY_OFF);
         if ($error != "") {
             die(end_with_result($error));
