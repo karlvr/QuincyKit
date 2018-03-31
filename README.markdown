@@ -71,7 +71,7 @@ The server requires at least PHP 5.2 and a MySQL server installation!
     $base = 'database_name';                // database name which contains the below listed tables
 
 - Adjust `$default_amount_crashes`, this defines the amount of crashes listed right away per pattern, if there are more, those are shown after clicking on a link at the end of the shortened list
-- Adjust your local timezone in the last line: `date_default_timezone_set('Europe/Berlin')` (see [http://de3.php.net/manual/en/timezones.php](http://de3.php.net/manual/en/timezones.php "PHP: List of Supported Timezones - Manual"))
+- Adjust your local timezone in the last line: `date_default_timezone_set('Europe/Berlin')` (see [http://php.net/manual/en/timezones.php](http://php.net/manual/en/timezones.php "PHP: List of Supported Timezones - Manual"))
 - If you DO NOT want to limit the server to accept only data for your applications:
   - set `$acceptallapps` to true
 - Otherwise:
