@@ -104,7 +104,7 @@ if ($content !== false && strlen($content) > 0)
 		
 			echo "  Symbolicating ...\n";
 			
-			exec('perl ./symbolicatecrash.pl -o '.$resultfilename.' '.$filename);
+			exec('DEVELOPER_DIR=$(xcode-select -p) perl ./symbolicatecrash.pl -o '.$resultfilename.' '.$filename);
 	
 			unlink($filename);
 			
