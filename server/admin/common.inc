@@ -353,7 +353,7 @@ function crashLogGroupArray($logdata) {
                 if (count($binaryImage) > 0) {
                     $location = $description;
                     // we use the normalized address for grouping
-                    if ($stackFrame["address"] > $binaryImage["loadAddress"]) {
+                    if (hexdec($stackFrame["address"]) > hexdec($binaryImage["loadAddress"])) {
                         $groupAddress = dechex(hexdec($stackFrame["address"]) - hexdec($binaryImage["loadAddress"]));
                     } else {
                         $groupAddress = $stackFrame["address"];
