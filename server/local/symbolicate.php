@@ -68,14 +68,14 @@ function doPost($postdata)
 		while (!feof($handle)) 
 			$response.=fgets($handle, 128); 
 			
-		$response=split("\r\n\r\n",$response);
+		$response=preg_split("/\r\n\r\n/",$response);
 		
 		$header=$response[0]; 
 		$responsecontent=$response[1]; 
 		
 		if(!(strpos($header,"Transfer-Encoding: chunked")===false))
 		{
-			$aux=split("\r\n",$responsecontent); 
+			$aux=preg_split("/\r\n/",$responsecontent); 
 			for($i=0;$i<count($aux);$i++) 
 				if($i==0 || ($i%2==0)) 
 					$aux[$i]=""; 
@@ -104,7 +104,7 @@ $error = false;
 if ($content !== false && strlen($content) > 0)
 {
 	echo "To do list: ".$content."\n\n";
-	$crashids = split(',', $content);
+	$crashids = preg_split('/,/', $content);
 	foreach ($crashids as $crashid)
 	{
 		$filename = $crashid.".crash";
