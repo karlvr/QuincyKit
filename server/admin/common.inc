@@ -496,8 +496,6 @@ function groupCrashReport($crash, $dblink, $notify) {
                     mail($notify_emails, $subject, $message, 'From: '.$mail_from. "\r\n");
                 }
             }
-
-            mysqli_free_result($result);
         } else if ($numrows == 0) {
             // create a new pattern for this bug and set amount of occurrances to 1
             $query = "INSERT INTO ".$dbgrouptable." (bundleidentifier, affected, pattern, location, exception, reason, amount, latesttimestamp) values ('".$bundleidentifier."', '".$version."', '".$crashPattern."', '".mysqli_real_escape_string($dblink, $crashLocation)."', '".mysqli_real_escape_string($dblink, $crashException)."', '".mysqli_real_escape_string($dblink, $crashReason)."', 1, ".time().")";
