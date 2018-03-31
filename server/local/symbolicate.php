@@ -39,6 +39,21 @@
 
 include "serverconfig.php";
 
+function doGet($path) {
+	global $scheme, $hostname, $webuser, $webpwd;
+	
+	$url = "$scheme://$hostname$path";
+
+	$curl = curl_init($url);
+	curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+	if ($webuser != '') {
+		curl_setopt($curl, CURLOPT_USERPWD, "$webuser:$webpwd");
+	}
+    $response = curl_exec($curl);
+	curl_close($curl);
+	return $response;
+}
+
 function doPost($postdata)
 {
 	global $updatecrashdataurl, $scheme, $hostname, $webuser, $webpwd;
@@ -55,21 +70,10 @@ function doPost($postdata)
     $response = curl_exec($curl);
 	curl_close($curl);
 	return $response;
-} 
-    
-
-if ($webuser != "" && $webpwd != "")
-{
-    $downloadtodosurl = "$scheme://".$webuser.":".$webpwd."@".$hostname.$downloadtodosurl;
-    $getcrashdataurl = "$scheme://".$webuser.":".$webpwd."@".$hostname.$getcrashdataurl;
-} else {
-    $downloadtodosurl = "$scheme://".$hostname.$downloadtodosurl;
-    $getcrashdataurl = "$scheme://".$hostname.$getcrashdataurl;
 }
 
-
 // get todo list from the server
-$content = file_get_contents($downloadtodosurl);
+$content = doGet($downloadtodosurl);
 
 $error = false;
 
@@ -87,7 +91,7 @@ if ($content !== false && strlen($content) > 0)
 	
 		echo "  Downloading crash data ...\n";
 	
-		$log = file_get_contents($getcrashdataurl.$crashid);
+		$log = doGet($getcrashdataurl.$crashid);
 	
 		if ($log !== false && strlen($log) > 0)
 		{
