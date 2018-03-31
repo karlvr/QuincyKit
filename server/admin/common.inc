@@ -389,7 +389,8 @@ function crashLogGroupArray($logdata) {
 }
 
 function groupCrashReport($crash, $dblink, $notify) {
-    global $dbversiontable, $dbgrouptable, $dbcrashtable, $dbsymbolicatetable, $notify_default_version;
+    global $dbversiontable, $dbgrouptable, $dbcrashtable, $dbsymbolicatetable, $notify_amount_group, $notify_default_version, 
+        $push_activated, $boxcar_activated, $mail_activated;
     
     $bundleidentifier = $crash["bundleidentifier"];
     $version = $crash["version"];
