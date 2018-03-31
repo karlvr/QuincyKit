@@ -451,7 +451,7 @@ function groupCrashReport($crash, $dblink, $notify) {
 
             mysqli_free_result($result);
 
-            // update the occurances of this pattern
+            // update the occurences of this pattern
             $query = "UPDATE ".$dbgrouptable." SET amount=amount+1, latesttimestamp = ".time().", location='".mysqli_real_escape_string($dblink, $crashLocation)."', exception='".mysqli_real_escape_string($dblink, $crashException)."', reason='".mysqli_real_escape_string($dblink, $crashReason)."' WHERE id=".$log_groupid;
             $result = mysqli_query($dblink, $query);
             if (!$result) return FAILURE_SQL_UPDATE_PATTERN_OCCURANCES;
@@ -530,12 +530,10 @@ function groupCrashReport($crash, $dblink, $notify) {
     }
     
     if (array_key_exists('id', $crash)) {
-        // now insert the crashlog into the database
+        // now update the crashlog in the database to put it in this group
         $query = "UPDATE ".$dbcrashtable." SET groupid=".$log_groupid." WHERE id=".$crash["id"];
         $result = mysqli_query($dblink, $query);
         if (!$result) return FAILURE_SQL_ADD_CRASHLOG;
-        
-        // TODO: update latesttimestamp of group
     } else {        
         // now insert the crashlog into the database
       	$query = "INSERT INTO ".$dbcrashtable." (userid, username, contact, bundleidentifier, applicationname, systemversion, platform, senderversion, version, description, log, groupid, timestamp, jailbreak) values ('".$crash["userid"]."', '".$crash["username"]."', '".$crash["contact"]."', '".$bundleidentifier."', '".$crash["applicationname"]."', '".$crash["systemversion"]."', '".$crash["platform"]."', '".$crash["senderversion"]."', '".$version."', '".$crash["description"]."', '".mysqli_real_escape_string($dblink, $logdata)."', '".$log_groupid."', '".date("Y-m-d H:i:s")."', ".$jailbreak.")";

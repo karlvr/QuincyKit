@@ -67,7 +67,7 @@ $crashvaluesarray = array();
 $crashvalues = "";
 
 
-// get the amount of crashes over time
+// get the number of crashes over time
 
 $query = "SELECT timestamp FROM ".$dbcrashtable."  WHERE bundleidentifier = '".$bundleidentifier."' AND version = '".$version."' ORDER BY timestamp desc";
 $result = mysqli_query($GLOBALS['link'], $query) or die(end_with_result('Error in SQL '.$query));
@@ -97,7 +97,7 @@ echo "<tr><td><div id=\"platformdiv\" style=\"height:280px;width:300px; \"></div
 echo "<td><div id=\"crashdiv\" style=\"height:280px;width:300px; \"></div></td>";
 echo "<td><div id=\"osdiv\" style=\"height:280px;width:300px; \"></div></td></tr>"; 
 
-// get the amount of crashes per system version
+// get the number of crashes per system version
 $crashestime = true;
 
 $osticks = "";
@@ -118,7 +118,7 @@ if ($numrows2 > 0) {
 }
 mysqli_free_result($result2);
 
-// get the amount of crashes per system version
+// get the number of crashes per platform
 $crashestime = true;
 
 $platformticks = "";

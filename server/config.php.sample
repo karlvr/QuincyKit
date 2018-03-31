@@ -115,6 +115,6 @@ $createIssueTitle = "New crash type";           // The title given for a new iss
 
 $hockeyAppURL = 'ssl://beta.hockeyapp.net/';    // The HockeyApp server address to route the crashes to, this should normally never be edited!
 
-date_default_timezone_set('Europe/Berlin');	    // set the default timezone (see http://de3.php.net/manual/en/timezones.php)
+date_default_timezone_set('Europe/Berlin');	    // set the default timezone (see http://php.net/manual/en/timezones.php)
 
 ?>
