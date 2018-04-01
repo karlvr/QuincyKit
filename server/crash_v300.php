@@ -446,7 +446,8 @@ foreach ($crashes as $crash) {
     
   	$lastError = 0;
   } else if ($acceptlog == false) {
-  	$lastError = FAILURE_INVALID_INCOMING_DATA;
+    $lastError = FAILURE_INVALID_INCOMING_DATA;
+    error_log("Rejecting log for bundle identifier " . $crash["bundleidentifier"]);
   	continue;
   }
 }
